@@ -6,16 +6,69 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+
 ```
 
 ## Problem 1 
 
 ```{r}
 
+nyc_df <- read_csv("Data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
+  janitor::clean_names() %>% 
+  select(line:entry, vending, ada) %>% 
+  mutate(entry = 
+           case_match(
+             entry, 
+             "YES" ~ TRUE,
+             "NO" ~ FALSE 
+           ))
+
 ```
 
 
+
 ## Problem 2
+
+```{r}
+
+# Importing and cleaning Mr. Trash Wheel data
+
+mr_wheel_df <- readxl::read_excel("Data/202309 Trash Wheel Collection Data.xlsx", 
+                               sheet = "Mr. Trash Wheel", 
+                               range = "A2:N586") %>% 
+  janitor::clean_names() %>% 
+  mutate(sports_balls = as.integer(round(sports_balls)), 
+         wheel_name = "Mr. Trash Wheel", 
+         year = as.double(year))
+
+
+# Importing and cleaning Professor Trash Wheel data 
+
+prof_wheel_df <- readxl::read_excel("Data/202309 Trash Wheel Collection Data.xlsx", 
+                               sheet = "Professor Trash Wheel", 
+                               range = "A2:M108") %>% 
+  janitor::clean_names() %>% 
+  mutate(wheel_name = "Professor Trash Wheel")
+
+
+# Importing and cleaning Gwynnda data
+
+gwn_df <- readxl::read_excel("Data/202309 Trash Wheel Collection Data.xlsx", 
+                               sheet = "Gwynnda Trash Wheel", 
+                               range = "A2:L157") %>% 
+  janitor::clean_names() %>% 
+  mutate(wheel_name = "Gwynnda")
+
+
+# Combining all three wheels into one dataset 
+
+wheel_tidy <- bind_rows(mr_wheel_df, prof_wheel_df, gwn_df)
+
+
+```
+
 
 ```{r}
 
@@ -25,6 +78,12 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Problem 3
 
 ```{r}
+
+bakers_df <- read_csv("Data/bakers.csv")
+
+bakes_df <- read_csv("Data/bakes.csv")
+
+results_df <- read_csv("Data/results.csv")
 
 ```
 
