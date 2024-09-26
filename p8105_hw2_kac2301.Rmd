@@ -15,6 +15,8 @@ library(tidyverse)
 
 ```{r}
 
+# Reading in and cleaning NYC subway data
+
 nyc_df <- read_csv("Data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>% 
   select(line:entry, vending, ada) %>% 
@@ -24,10 +26,82 @@ nyc_df <- read_csv("Data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
              "YES" ~ TRUE,
              "NO" ~ FALSE 
            ))
+```
+
+These data describe the entrances and exits to all of the NYC subway stations. To clean this data, I renamed the columns using clean_names(), kept only important columns outlined by the assignment, and converted the "entry" variable values to TRUE/FALSE. There are 1868 rows (entrances or exits) and 32 columns (variables). I don't think this variable is tidy, because the route data takes up multiple columns and could be condensed into one column with additional rows. 
+
+```{r}
+
+# How many distinct stations?
+
+distinct_stations <- nyc_df %>% 
+  select(line, station_name) %>% 
+  distinct() %>% 
+  nrow()
+
+# How many stations are ADA compliant? 
+
+ada_compliant <- nyc_df %>% 
+  select(line, station_name, ada) %>% 
+  distinct() %>% 
+  filter(ada == TRUE) %>% 
+  nrow()
+
+# What proportion of station entrances and exits without vending allow entrance?
+
+no_vending <- nyc_df %>% 
+  distinct() %>% 
+  filter(vending == "NO") %>% 
+  nrow()
+
+allow_entry <- nyc_df %>%
+  distinct() %>% 
+  filter(vending == "NO",entry == TRUE) %>% 
+  nrow()
 
 ```
 
+There are 465 distinct stations, and 84 of these stations are ADA compliant. 45/117 stations without vending allow entrance. 
 
+```{r}
+
+# Reformat so that route number and route name are distinct variables
+
+nyc_df <- nyc_df %>% 
+  mutate(route8 = as.character(route8), 
+         route9 = as.character(route9), 
+         route10 = as.character(route10), 
+         route11 = as.character(route11)) %>% 
+  pivot_longer(route1:route11, 
+               names_to = "route_number", 
+               values_to = "route_name") 
+
+```
+
+```{r}
+
+# Distinct stations that serve the A train? 
+
+serve_a <- nyc_df %>% 
+  filter(route_name == "A") %>% 
+  select(line, station_name) %>% 
+  distinct() %>%
+  nrow()
+
+# Of the stations that serve the A train, how many are ADA compliant?
+
+ada_a <- nyc_df %>% 
+  filter(route_name == "A") %>% 
+  select(line, station_name, ada) %>% 
+  distinct() %>% 
+  filter(ada == TRUE) %>% 
+  nrow()
+
+```
+
+There are 60 distinct stations that serve the A train. Of these stations, 17 are ADA compliant. 
+
+> 
 
 ## Problem 2
 
@@ -62,18 +136,36 @@ gwn_df <- readxl::read_excel("Data/202309 Trash Wheel Collection Data.xlsx",
   mutate(wheel_name = "Gwynnda")
 
 
-# Combining all three wheels into one dataset 
+# Combining all three wheels into one data set 
 
 wheel_tidy <- bind_rows(mr_wheel_df, prof_wheel_df, gwn_df)
-
+head(wheel_tidy)
 
 ```
+
+These data describe the amount and types of trash collected by three different trash wheels (Mr. Trash Wheel, Professor Trash Wheel, and Gwynnda) from 2014 to 2023. Each row represents a dumpster, which is where a wheel deposits the trash it collects. This data set has 845 rows (observations) and 15 columns (variables). Some of the key variables are the date of collection, trash weight (tons), trash volume (cubic yards), and the number of homes powered. 
 
 
 ```{r}
 
+# Calculating total weight of trash collected by Professor Trash Wheel
+
+prof_sum <- prof_wheel_df %>% 
+  select(weight_tons) %>% 
+  sum()
+
+# Calculating total number of cigarette butts collected by Gwynnda in June 2022
+
+gwynnda_butts <- gwn_df %>% 
+  filter(month == "June", year == 2022) %>% 
+  select(cigarette_butts) %>% 
+  sum()
+
 ```
 
+The total weight of trash collected by Professor Trash Wheel was 216.26 tons. Gwynnda collected 18,120 cigarette butts in June of 2022. 
+
+>
 
 ## Problem 3
 
