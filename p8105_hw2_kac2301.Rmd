@@ -171,11 +171,99 @@ The total weight of trash collected by Professor Trash Wheel was 216.26 tons. Gw
 
 ```{r}
 
-bakers_df <- read_csv("Data/bakers.csv")
+# Reading in and cleaning individual data sets 
 
-bakes_df <- read_csv("Data/bakes.csv")
+bakers_df <- read_csv("Data/bakers.csv") %>% 
+  janitor::clean_names()
 
-results_df <- read_csv("Data/results.csv")
+bakes_df <- read_csv("Data/bakes.csv") %>% 
+  janitor::clean_names()
+
+# Giving the columns names, removing irrelevant rows
+
+results_df <- read_csv("Data/results.csv") 
+names(results_df) <- c("series", "episode", "baker", "technical", "result")
+results_df <- results_df %>% 
+  filter(series != "series") %>% 
+  mutate(series = as.double(series), 
+         episode = as.double(episode))
 
 ```
 
+```{r}
+
+# Joining tables 
+
+results_bakes_df <- right_join(bakes_df, results_df, 
+                              by = c("series" = "series", 
+                                     "episode" = "episode", 
+                                     "baker" = "baker"))
+
+# 
+
+full_df <- right_join(bakers_df, results_bakes_df, 
+                      by = c("series" = "series", 
+                             "baker_name" = "baker"))
+
+#HOW TO FIX NAMES
+
+View(full_df)
+
+```
+
+I started my data cleaning process by reading in each table and using clean_names() to fix the variable names. For the results data frame, this was slightly more challenging because the columns didn't have names, and the real column names were registering as row entries, so I had to assign names manually and then remove the first two rows. 
+
+To merge the data frames, I chose to preserve the length of results_df, since it had data for the most series, episodes, and bakers. This does mean that for my final data set, there are lots of rows that only contain the series, episode, baker, and result data (no bake or baker data). First, I merged bakes_df and results_df by comparing the series, episode, and baker columns. To merge this with baker_df, I had to **SDKFBSDKFHSKDJK
+
+The final data set **SKDFBSKDJ
+
+
+```{r}
+
+```
+
+
+** COMMENTING ON ABOVE TABLE 
+
+
+```{r}
+
+# Reading in and tidying viewers data
+
+viewers_df <- read_csv("Data/viewers.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(series_1:series_10, 
+               names_to = "series", 
+               values_to = "viewers", 
+               names_prefix = "series_") %>% 
+  mutate(series = as.integer(series), 
+         episode = as.integer(episode)) %>% 
+  arrange(series, episode) %>% 
+  select(series, episode, viewers)
+
+head(viewers_df, 10)
+
+```
+
+```{r}
+
+# Finding season 1 viewer average 
+
+s1 <- viewers_df %>% 
+  filter(series == 1) %>% 
+  na.omit() %>% 
+  select(viewers)
+
+avg_s1 <- sum(s1)/6
+
+# Finding season 5 viewer average
+
+s5 <- viewers_df %>% 
+  filter(series == 5) %>% 
+  select(viewers)
+
+avg_s5 <- sum(s5)/10
+
+```
+
+The average viewership in Season 1 was 2.77 million. The average viewership in Season 5 was 10.04 million. 
