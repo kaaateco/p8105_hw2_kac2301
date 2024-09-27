@@ -199,32 +199,49 @@ results_bakes_df <- right_join(bakes_df, results_df,
                                      "episode" = "episode", 
                                      "baker" = "baker"))
 
-# 
+# Creating a first name column in bakers_df for merge
+
+bakers_df <- bakers_df %>% 
+  mutate(first_name = unlist(strsplit(baker_name, " "))[c(TRUE, FALSE)])
+
+
+# Merging into full data set
 
 full_df <- right_join(bakers_df, results_bakes_df, 
                       by = c("series" = "series", 
-                             "baker_name" = "baker"))
+                             "first_name" = "baker"))
 
-#HOW TO FIX NAMES
+# Rearranging full data set
 
-View(full_df)
+full_tidy_df <- full_df %>% 
+  select(series, episode, baker_name, first_name, technical, result, 
+         signature_bake, show_stopper, baker_age, baker_occupation, 
+         hometown) %>% 
+  arrange(series, baker_name, episode)
+
+# Exporting as csv 
+
+write_csv(full_tidy_df, "Data/full_tidy_df.csv")
 
 ```
 
 I started my data cleaning process by reading in each table and using clean_names() to fix the variable names. For the results data frame, this was slightly more challenging because the columns didn't have names, and the real column names were registering as row entries, so I had to assign names manually and then remove the first two rows. 
 
-To merge the data frames, I chose to preserve the length of results_df, since it had data for the most series, episodes, and bakers. This does mean that for my final data set, there are lots of rows that only contain the series, episode, baker, and result data (no bake or baker data). First, I merged bakes_df and results_df by comparing the series, episode, and baker columns. To merge this with baker_df, I had to **SDKFBSDKFHSKDJK
+To merge the data frames, I chose to preserve the length of results_df, since it had data for the most series, episodes, and bakers. This does mean that for my final data set, there are lots of rows that only contain the series, episode, baker, and result data (no bake or baker data). First, I merged bakes_df and results_df by comparing the series, episode, and baker columns. To merge this with baker_df, I had to first extract the first names out of the baker_name variable to create a new column. Using this new column and the series column, I merged it with my partially merged data set, results_bakes_df. Finally, I rearranged the columns to make contestant performance easier to track and reordered the rows by season, then baker, then episode. 
 
-The final data set **SKDFBSKDJ
+The final data set has 11 columns and 1,136 rows, which represent individual baker performance in each episode of a given season. Several important variables are baker_name, series, episode, result, and signature_bake. 
 
 
 ```{r}
 
+winners_df <- full_tidy_df %>% 
+  filter(series >= 5, 
+         result %in% c("WINNER", "STAR BAKER")) %>% 
+  arrange(series, episode)
+
 ```
 
-
-** COMMENTING ON ABOVE TABLE 
-
+This table has 60 rows and 11 columns. There were some surprise winners, for example David in season 10 did not win "Star Baker" in any episode until winning the full competition in episode 10. Similarly, Nancy in season 1 only won "Star Baker" in the first episode, and then didn't win again until winning the final episode. There were some winners that were predictable, such as Nadiya in season 6, Candice in season 7, and Sophie in season 8, who all won "Star Baker" several times before winning the season. 
 
 ```{r}
 
